@@ -66,7 +66,7 @@ INCL = -I$(BOOST_INC) -I.
 
 STATICLIB=$(LIBNAME).a
 
-SRCC = manager.cpp
+SRCC = gen_uuid.cpp manager.cpp
 
 OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCC))
 

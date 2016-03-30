@@ -19,10 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3563 $ $Date:: 2016-03-29 #$ $Author: serge $
+// $Revision: 3573 $ $Date:: 2016-03-31 #$ $Author: serge $
 
 #include <map>          // std::map
+#include <set>          // std::set
 #include <chrono>       // std::chrono::system_clock::time_point
+#include <mutex>        // std::mutex
+
 
 namespace session_manager
 {
@@ -43,6 +46,7 @@ public:
     {
         uint16_t    expiration_time;    // in minutes
         uint16_t    max_sessions_per_user;
+        bool        prolong_expiration;
     };
 
 public:
@@ -61,18 +65,28 @@ private:
     {
         std::chrono::system_clock::time_point started;
         std::chrono::system_clock::time_point expire;
+
+        bool is_expired() const;
     };
 
-    typedef std::map<std::string,Session>    MapSessionIdToSession;
+    typedef std::map<std::string,Session>       MapSessionIdToSession;
+    typedef std::map<std::string,std::string>   MapSessionIdToUser;
 
     typedef std::map<std::string,std::set<std::string>>    MapUserToSessionList;
 
 private:
 
-    static std::string generate_session_id( const std::string & user_id );
     void remove_expired();
 
+    void init_new_session( Session & sess );
+
+    void add_new_session( MapUserToSessionList::mapped_type & sess_set, const std::string & user_id, std::string & session_id );
+
+    bool remove_session( const std::string & session_id, std::string & error );
+
 private:
+    mutable std::mutex      mutex_;
+
 
     IAuthenticator          * auth_;
 
@@ -80,6 +94,7 @@ private:
 
     MapSessionIdToSession   map_sessions_;
     MapUserToSessionList    map_user_to_sessions_;
+    MapSessionIdToUser      map_session_to_user_;
 };
 
 }

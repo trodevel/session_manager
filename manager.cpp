@@ -19,9 +19,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3564 $ $Date:: 2016-03-29 #$ $Author: serge $
+// $Revision: 3574 $ $Date:: 2016-03-31 #$ $Author: serge $
 
 #include "manager.h"        // self
+
+#include <cassert>          // std::assert
+
+#include "gen_uuid.h"       // gen_uuid
+
+#include "../utils/mutex_helper.h"      // MUTEX_SCOPE_LOCK
+#include "../utils/dummy_logger.h"      // dummy_log
+
+#define MODULENAME      "Manager"
 
 
 namespace session_manager
@@ -40,16 +49,54 @@ bool Manager::init( IAuthenticator * auth, const Config & config )
     auth_   = auth;
     config_ = config;
 
+    dummy_log_info( MODULENAME, "init: OK" );
+
     return true;
 }
 
-
 bool Manager::authenticate( const std::string & user_id, const std::string & password, std::string & session_id, std::string & error )
 {
+    dummy_log_debug( MODULENAME, "authenticate: user %s, password ...", user_id.c_str() );
+
+    MUTEX_SCOPE_LOCK( mutex_ );
+
     if( auth_->is_authenticated( user_id, password ) == false )
     {
         error = "authentication failed";
         return false;
+    }
+
+    auto it = map_user_to_sessions_.find( user_id );
+
+    if( it == map_user_to_sessions_.end() )
+    {
+        // user has no sessions yet
+
+        MapUserToSessionList::mapped_type sess_set;
+
+        sess_set.insert( session_id );
+
+        {
+            bool _b = map_user_to_sessions_.insert( MapUserToSessionList::value_type( user_id, sess_set )).second;
+
+            assert( _b );
+        }
+
+        add_new_session( sess_set, user_id, session_id );
+    }
+    else
+    {
+        if( it->second.size() == config_.max_sessions_per_user )
+        {
+            error = "max number of sessions was reached (" + std::to_string( config_.max_sessions_per_user ) + ")";
+            return false;
+        }
+        else
+        {
+            auto & sess_set = it->second;
+
+            add_new_session( sess_set, user_id, session_id );
+        }
     }
 
     return true;
@@ -57,18 +104,119 @@ bool Manager::authenticate( const std::string & user_id, const std::string & pas
 
 bool Manager::close_session( const std::string & session_id, std::string & error )
 {
+    MUTEX_SCOPE_LOCK( mutex_ );
 
+    return remove_session( session_id, error );
+}
+
+bool Manager::remove_session( const std::string & session_id, std::string & error )
+{
+    dummy_log_debug( MODULENAME, "remove_session: session %s", session_id.c_str() );
+
+    {
+        // remove session from session map
+        auto it = map_sessions_.find( session_id );
+
+        if( it == map_sessions_.end() )
+        {
+            error = "invalid session id or session has already expired";
+            return false;
+        }
+
+        map_sessions_.erase( it );
+    }
+
+    std::string user_id;
+    {
+        // remove session from session-to-user map
+        auto it = map_session_to_user_.find( session_id );
+
+        assert( it != map_session_to_user_.end() );
+
+        user_id = it->second;
+
+        map_session_to_user_.erase( it );
+    }
+
+    {
+        // remove session from user-to-session map
+        auto it = map_user_to_sessions_.find( user_id );
+
+        assert( it != map_user_to_sessions_.end() );
+
+        auto _num_del = it->second.erase( session_id );
+
+        assert( _num_del > 0 );
+    }
+
+    return true;
 }
 
 void Manager::remove_expired()
 {
+    std::string error;
+
+    std::size_t num_expired = 0;
+
+    for( auto & v : map_sessions_ )
+    {
+        if( v.second.is_expired() )
+        {
+            num_expired++;
+            remove_session( v.first, error );
+        }
+    }
+
+    dummy_log_debug( MODULENAME, "remove_expired: number of expired sessions %u", num_expired );
+}
+
+void Manager::init_new_session( Session & sess )
+{
+    sess.started    = std::chrono::system_clock::now();
+    sess.expire     = sess.started + std::chrono::minutes( config_.expiration_time );
+}
+
+void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, const std::string & user_id, std::string & session_id )
+{
+    Session sess;
+
+    init_new_session( sess );
+
+    session_id = gen_uuid();
+
+    dummy_log_debug( MODULENAME, "add_new_session: session %s, user %s", session_id.c_str(), user_id.c_str() );
+
+    sess_set.insert( session_id );
+
+    {
+        bool _b = map_sessions_.insert( MapSessionIdToSession::value_type( session_id, sess )).second;
+
+        assert( _b );
+    }
+
+    {
+        bool _b = map_session_to_user_.insert( MapSessionIdToUser::value_type( session_id, user_id )).second;
+
+        assert( _b );
+    }
+
+    dummy_log_debug( MODULENAME, "add_new_session: total number of sessions %u", map_sessions_.size() );
 }
 
 bool Manager::is_authenticated( const std::string & session_id )
 {
+    MUTEX_SCOPE_LOCK( mutex_ );
+
     remove_expired();
 
     return ( map_sessions_.count( session_id ) > 0 ) ? true : false;
+}
+
+bool Manager::Session::is_expired() const
+{
+    auto now = std::chrono::system_clock::now();
+
+    return ( now >= expire ) ? true : false;
 }
 
 }
