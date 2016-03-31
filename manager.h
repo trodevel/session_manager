@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3573 $ $Date:: 2016-03-31 #$ $Author: serge $
+// $Revision: 3578 $ $Date:: 2016-03-31 #$ $Author: serge $
 
 #include <map>          // std::map
 #include <set>          // std::set
@@ -30,13 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace session_manager
 {
 
-class IAuthenticator
-{
-public:
-    virtual ~IAuthenticator() {}
-
-    virtual bool is_authenticated( const std::string & user_id, const std::string & password ) const    = 0;
-};
+class IAuthenticator;
 
 class Manager
 {
@@ -46,7 +40,7 @@ public:
     {
         uint16_t    expiration_time;    // in minutes
         uint16_t    max_sessions_per_user;
-        bool        prolong_expiration;
+        bool        postpone_expiration;
     };
 
 public:
@@ -79,6 +73,7 @@ private:
     void remove_expired();
 
     void init_new_session( Session & sess );
+    void postpone_expiration( Session & sess );
 
     void add_new_session( MapUserToSessionList::mapped_type & sess_set, const std::string & user_id, std::string & session_id );
 

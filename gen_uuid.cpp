@@ -1,6 +1,6 @@
 /*
 
-Authentication Manager.
+UUID generator.
 
 Copyright (C) 2016 Sergey Kolevatov
 
@@ -19,18 +19,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3565 $ $Date:: 2016-03-30 #$ $Author: serge $
+// $Revision: 3584 $ $Date:: 2016-03-31 #$ $Author: serge $
 
 #include "gen_uuid.h"        // self
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp> // generators
 
 namespace session_manager
 {
 std::string gen_uuid()
 {
-    boost::uuids::uuid u;
+    boost::uuids::uuid u = boost::uuids::random_generator()();
 
     return boost::uuids::to_string( u );
 }

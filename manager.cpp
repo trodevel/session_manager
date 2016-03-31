@@ -19,13 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3574 $ $Date:: 2016-03-31 #$ $Author: serge $
+// $Revision: 3578 $ $Date:: 2016-03-31 #$ $Author: serge $
 
 #include "manager.h"        // self
 
 #include <cassert>          // std::assert
 
 #include "gen_uuid.h"       // gen_uuid
+#include "i_authenticator.h"            // IAuthenticator
 
 #include "../utils/mutex_helper.h"      // MUTEX_SCOPE_LOCK
 #include "../utils/dummy_logger.h"      // dummy_log
@@ -176,6 +177,11 @@ void Manager::init_new_session( Session & sess )
     sess.expire     = sess.started + std::chrono::minutes( config_.expiration_time );
 }
 
+void Manager::postpone_expiration( Session & sess )
+{
+    sess.expire     = std::chrono::system_clock::now() + std::chrono::minutes( config_.expiration_time );
+}
+
 void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, const std::string & user_id, std::string & session_id )
 {
     Session sess;
@@ -209,7 +215,14 @@ bool Manager::is_authenticated( const std::string & session_id )
 
     remove_expired();
 
-    return ( map_sessions_.count( session_id ) > 0 ) ? true : false;
+    bool res = ( map_sessions_.count( session_id ) > 0 ) ? true : false;
+
+    if( res && config_.postpone_expiration )
+    {
+        postpone_expiration( map_sessions_[ session_id ] );
+    }
+
+    return res;
 }
 
 bool Manager::Session::is_expired() const

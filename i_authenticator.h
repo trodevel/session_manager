@@ -1,6 +1,6 @@
 /*
 
-UUID generator.
+Authenticator interface.
 
 Copyright (C) 2016 Sergey Kolevatov
 
@@ -19,16 +19,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3577 $ $Date:: 2016-03-31 #$ $Author: serge $
-
-#ifndef SESSION_MANAGER_GEN_UUID_H
-#define SESSION_MANAGER_GEN_UUID_H
+// $Revision: 3578 $ $Date:: 2016-03-31 #$ $Author: serge $
 
 #include <string>       // std::string
 
+#ifndef SESSION_MANAGER_I_AUTHENTICATOR_H
+#define SESSION_MANAGER_I_AUTHENTICATOR_H
+
 namespace session_manager
 {
-std::string gen_uuid();
+
+class IAuthenticator
+{
+public:
+    virtual ~IAuthenticator() {}
+
+    virtual bool is_authenticated( const std::string & user_id, const std::string & password ) const    = 0;
+};
+
 }
 
-#endif // SESSION_MANAGER_GEN_UUID_H
+#endif // SESSION_MANAGER_I_AUTHENTICATOR_H
