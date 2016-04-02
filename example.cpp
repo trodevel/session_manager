@@ -19,12 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3583 $ $Date:: 2016-03-31 #$ $Author: serge $
+// $Revision: 3593 $ $Date:: 2016-04-01 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
 
 #include <iostream>             // std::cout
+#include <thread>               // std::this_thread
 
 class Authenticator: public session_manager::IAuthenticator
 {
@@ -73,7 +74,7 @@ void test_auth( session_manager::Manager & m, const std::string & user_id, const
 
     if( b )
     {
-        std::cout << "authenticated: session id = " << id << std::endl;
+        std::cout << "OK: user authenticated: session id = " << id << std::endl;
     }
     else
     {
@@ -92,13 +93,110 @@ void test_is_auth( session_manager::Manager & m, const std::string & user_id, co
 
     if( b )
     {
-        std::cout << "authenticated: session id = " << id << std::endl;
+        std::cout << "OK: user authenticated: session id = " << id << std::endl;
 
         auto is_auth = m.is_authenticated( id );
 
         if( is_auth )
         {
-            std::cout << "session id authenticated" << std::endl;
+            std::cout << "OK: session id authenticated" << std::endl;
+
+            auto is_closed = m.close_session( id, error );
+
+            if( is_closed )
+            {
+                std::cout << "OK: session successfully closed" << std::endl;
+            }
+            else
+            {
+                std::cout << "ERROR: " << error << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "ERROR: session id NOT authenticated" << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "ERROR: " << error << std::endl;
+    }
+}
+
+void test_wrong_id( session_manager::Manager & m )
+{
+    std::string id = "b3ef4ab3-2c1c-4590-8d9c-a764eb068dbf";
+
+    auto is_auth = m.is_authenticated( id );
+
+    if( is_auth )
+    {
+        std::cout << "ERROR: wrong session id was incorrectly authenticated" << std::endl;
+    }
+    else
+    {
+        std::cout << "OK: wrong session id was not authenticated" << std::endl;
+    }
+}
+
+void test_close_wrong_id( session_manager::Manager & m )
+{
+    std::string id = "b3ef4ab3-2c1c-4590-8d9c-a764eb068dbf";
+
+    std::string error;
+
+    auto is_closed = m.close_session( id, error );
+
+    if( is_closed )
+    {
+        std::cout << "ERROR: wrong session id was incorrectly closed" << std::endl;
+    }
+    else
+    {
+        std::cout << "OK: wrong session id was not closed: " << error << std::endl;
+    }
+}
+
+void test_max_sessions( session_manager::Manager & m, const std::string & user_id, const std::string & password )
+{
+    test_auth( m, user_id, password );
+    test_auth( m, user_id, password );
+    test_auth( m, user_id, password );
+}
+
+void test_expiration( session_manager::Manager & m, const std::string & user_id, const std::string & password, uint32_t sleep )
+{
+    std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
+
+    std::string id;
+    std::string error;
+
+    auto b = m.authenticate( user_id, password, id, error );
+
+    if( b )
+    {
+        std::cout << "OK: user authenticated: session id = " << id << std::endl;
+
+        auto is_auth = m.is_authenticated( id );
+
+        if( is_auth )
+        {
+            std::cout << "OK: session id authenticated, sleep " << sleep << " min" << std::endl;
+
+            std::chrono::minutes timespan( sleep );
+
+            std::this_thread::sleep_for( timespan );
+
+            auto is_auth2 = m.is_authenticated( id );
+
+            if( is_auth2 )
+            {
+                std::cout << "ERROR: expired session id was authenticated" << std::endl;
+            }
+            else
+            {
+                std::cout << "OK: expired session id was NOT authenticated" << std::endl;
+            }
         }
         else
         {
@@ -119,7 +217,7 @@ int main()
 
     session_manager::Manager::Config cfg;
 
-    cfg.expiration_time         = 5;
+    cfg.expiration_time         = 1;
     cfg.max_sessions_per_user   = 2;
     cfg.postpone_expiration     = true;
 
@@ -135,6 +233,14 @@ int main()
     test_auth( m, "user1", "alpha" );
 
     test_is_auth( m, "user2", "beta" );
+
+    test_max_sessions( m, "user3", "gamma" );
+
+    test_wrong_id( m );
+
+    test_close_wrong_id( m );
+
+    test_expiration( m, "user2", "beta", cfg.expiration_time );
 
     return 0;
 }

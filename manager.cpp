@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3578 $ $Date:: 2016-03-31 #$ $Author: serge $
+// $Revision: 3588 $ $Date:: 2016-04-01 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -75,15 +75,13 @@ bool Manager::authenticate( const std::string & user_id, const std::string & pas
 
         MapUserToSessionList::mapped_type sess_set;
 
-        sess_set.insert( session_id );
+        add_new_session( sess_set, user_id, session_id );
 
         {
             bool _b = map_user_to_sessions_.insert( MapUserToSessionList::value_type( user_id, sess_set )).second;
 
             assert( _b );
         }
-
-        add_new_session( sess_set, user_id, session_id );
     }
     else
     {
