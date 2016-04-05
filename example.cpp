@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3593 $ $Date:: 2016-04-01 #$ $Author: serge $
+// $Revision: 3632 $ $Date:: 2016-04-05 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
@@ -33,13 +33,13 @@ public:
 
     Authenticator()
     {
-        map_user_to_pwd_hash_.insert( Map::value_type( "user1", std::hash<std::string>()( "alpha" ) ) );
-        map_user_to_pwd_hash_.insert( Map::value_type( "user2", std::hash<std::string>()( "beta" ) ) );
-        map_user_to_pwd_hash_.insert( Map::value_type( "user3", std::hash<std::string>()( "gamma" ) ) );
+        map_user_to_pwd_hash_.insert( Map::value_type( 1, std::hash<std::string>()( "alpha" ) ) );
+        map_user_to_pwd_hash_.insert( Map::value_type( 2, std::hash<std::string>()( "beta" ) ) );
+        map_user_to_pwd_hash_.insert( Map::value_type( 3, std::hash<std::string>()( "gamma" ) ) );
     }
 
     // interface session_manager::IAuthenticator
-    virtual bool is_authenticated( const std::string & user_id, const std::string & password ) const
+    virtual bool is_authenticated( uint32_t user_id, const std::string & password ) const
     {
         auto it = map_user_to_pwd_hash_.find( user_id );
 
@@ -58,12 +58,12 @@ public:
 
 private:
 
-    typedef std::map<std::string,std::size_t> Map;
+    typedef std::map<uint32_t,std::size_t> Map;
 
     Map map_user_to_pwd_hash_;
 };
 
-void test_auth( session_manager::Manager & m, const std::string & user_id, const std::string & password )
+void test_auth( session_manager::Manager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -82,7 +82,7 @@ void test_auth( session_manager::Manager & m, const std::string & user_id, const
     }
 }
 
-void test_is_auth( session_manager::Manager & m, const std::string & user_id, const std::string & password )
+void test_is_auth( session_manager::Manager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -110,6 +110,45 @@ void test_is_auth( session_manager::Manager & m, const std::string & user_id, co
             else
             {
                 std::cout << "ERROR: " << error << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "ERROR: session id NOT authenticated" << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "ERROR: " << error << std::endl;
+    }
+}
+
+void test_is_auth_user( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+{
+    std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
+
+    std::string id;
+    std::string error;
+
+    auto b = m.authenticate( user_id, password, id, error );
+
+    if( b )
+    {
+        std::cout << "OK: user authenticated: session id = " << id << std::endl;
+
+        session_manager::Manager::user_id_t auth_user_id;
+
+        auto is_auth = m.is_authenticated( id, auth_user_id );
+
+        if( is_auth )
+        {
+            if( user_id == auth_user_id )
+            {
+                std::cout << "OK: session id authenticated for expected user " << auth_user_id << std::endl;
+            }
+            else
+            {
+                std::cout << "ERROR: session is authenticated for wrong user " << auth_user_id << std::endl;
             }
         }
         else
@@ -157,14 +196,14 @@ void test_close_wrong_id( session_manager::Manager & m )
     }
 }
 
-void test_max_sessions( session_manager::Manager & m, const std::string & user_id, const std::string & password )
+void test_max_sessions( session_manager::Manager & m, uint32_t user_id, const std::string & password )
 {
     test_auth( m, user_id, password );
     test_auth( m, user_id, password );
     test_auth( m, user_id, password );
 }
 
-void test_expiration( session_manager::Manager & m, const std::string & user_id, const std::string & password, uint32_t sleep )
+void test_expiration( session_manager::Manager & m, uint32_t user_id, const std::string & password, uint32_t sleep )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -229,18 +268,24 @@ int main()
         return 0;
     }
 
-    test_auth( m, "user1", "blabla" );
-    test_auth( m, "user1", "alpha" );
+    const uint32_t user1 = 1;
+    const uint32_t user2 = 2;
+    const uint32_t user3 = 3;
 
-    test_is_auth( m, "user2", "beta" );
+    test_auth( m, user1, "blabla" );
+    test_auth( m, user1, "alpha" );
 
-    test_max_sessions( m, "user3", "gamma" );
+    test_is_auth( m, user2, "beta" );
+
+    test_is_auth_user( m, user2, "beta" );
+
+    test_max_sessions( m, user3, "gamma" );
 
     test_wrong_id( m );
 
     test_close_wrong_id( m );
 
-    test_expiration( m, "user2", "beta", cfg.expiration_time );
+    test_expiration( m, user2, "beta", cfg.expiration_time );
 
     return 0;
 }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3578 $ $Date:: 2016-03-31 #$ $Author: serge $
+// $Revision: 3631 $ $Date:: 2016-04-05 #$ $Author: serge $
 
 #include <map>          // std::map
 #include <set>          // std::set
@@ -36,6 +36,8 @@ class Manager
 {
 public:
 
+    typedef uint32_t    user_id_t;
+
     struct Config
     {
         uint16_t    expiration_time;    // in minutes
@@ -48,9 +50,10 @@ public:
 
     bool init( IAuthenticator * auth, const Config & config );
 
-    bool authenticate( const std::string & user_id, const std::string & password, std::string & session_id, std::string & error );
+    bool authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error );
     bool close_session( const std::string & session_id, std::string & error );
 
+    bool is_authenticated( const std::string & session_id, user_id_t & user_id );
     bool is_authenticated( const std::string & session_id );
 
 private:
@@ -64,9 +67,9 @@ private:
     };
 
     typedef std::map<std::string,Session>       MapSessionIdToSession;
-    typedef std::map<std::string,std::string>   MapSessionIdToUser;
+    typedef std::map<std::string,user_id_t>     MapSessionIdToUser;
 
-    typedef std::map<std::string,std::set<std::string>>    MapUserToSessionList;
+    typedef std::map<user_id_t,std::set<std::string>>    MapUserToSessionList;
 
 private:
 
@@ -75,7 +78,7 @@ private:
     void init_new_session( Session & sess );
     void postpone_expiration( Session & sess );
 
-    void add_new_session( MapUserToSessionList::mapped_type & sess_set, const std::string & user_id, std::string & session_id );
+    void add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id );
 
     bool remove_session( const std::string & session_id, std::string & error );
 

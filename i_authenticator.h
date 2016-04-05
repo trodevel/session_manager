@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3578 $ $Date:: 2016-03-31 #$ $Author: serge $
+// $Revision: 3630 $ $Date:: 2016-04-05 #$ $Author: serge $
 
 #include <string>       // std::string
 
@@ -34,7 +34,7 @@ class IAuthenticator
 public:
     virtual ~IAuthenticator() {}
 
-    virtual bool is_authenticated( const std::string & user_id, const std::string & password ) const    = 0;
+    virtual bool is_authenticated( uint32_t user_id, const std::string & password ) const    = 0;
 };
 
 }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3588 $ $Date:: 2016-04-01 #$ $Author: serge $
+// $Revision: 3631 $ $Date:: 2016-04-05 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -55,9 +55,9 @@ bool Manager::init( IAuthenticator * auth, const Config & config )
     return true;
 }
 
-bool Manager::authenticate( const std::string & user_id, const std::string & password, std::string & session_id, std::string & error )
+bool Manager::authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error )
 {
-    dummy_log_debug( MODULENAME, "authenticate: user %s, password ...", user_id.c_str() );
+    dummy_log_debug( MODULENAME, "authenticate: user %u, password ...", user_id );
 
     MUTEX_SCOPE_LOCK( mutex_ );
 
@@ -125,7 +125,7 @@ bool Manager::remove_session( const std::string & session_id, std::string & erro
         map_sessions_.erase( it );
     }
 
-    std::string user_id;
+    user_id_t user_id;
     {
         // remove session from session-to-user map
         auto it = map_session_to_user_.find( session_id );
@@ -180,7 +180,7 @@ void Manager::postpone_expiration( Session & sess )
     sess.expire     = std::chrono::system_clock::now() + std::chrono::minutes( config_.expiration_time );
 }
 
-void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, const std::string & user_id, std::string & session_id )
+void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id )
 {
     Session sess;
 
@@ -188,7 +188,7 @@ void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, con
 
     session_id = gen_uuid();
 
-    dummy_log_debug( MODULENAME, "add_new_session: session %s, user %s", session_id.c_str(), user_id.c_str() );
+    dummy_log_debug( MODULENAME, "add_new_session: session %s, user %u", session_id.c_str(), user_id );
 
     sess_set.insert( session_id );
 
@@ -207,20 +207,34 @@ void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, con
     dummy_log_debug( MODULENAME, "add_new_session: total number of sessions %u", map_sessions_.size() );
 }
 
-bool Manager::is_authenticated( const std::string & session_id )
+bool Manager::is_authenticated( const std::string & session_id, user_id_t & user_id )
 {
     MUTEX_SCOPE_LOCK( mutex_ );
 
     remove_expired();
 
-    bool res = ( map_sessions_.count( session_id ) > 0 ) ? true : false;
+    if( map_sessions_.count( session_id ) == 0 )
+        return false;
 
-    if( res && config_.postpone_expiration )
+    auto it = map_session_to_user_.find( session_id );
+
+    assert( it != map_session_to_user_.end() );
+
+    user_id = it->second;
+
+    if( config_.postpone_expiration )
     {
         postpone_expiration( map_sessions_[ session_id ] );
     }
 
-    return res;
+    return true;
+}
+
+bool Manager::is_authenticated( const std::string & session_id )
+{
+    user_id_t dummy;
+
+    return is_authenticated( session_id, dummy );
 }
 
 bool Manager::Session::is_expired() const
