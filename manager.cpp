@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3631 $ $Date:: 2016-04-05 #$ $Author: serge $
+// $Revision: 3742 $ $Date:: 2016-04-11 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -98,6 +98,8 @@ bool Manager::authenticate( user_id_t user_id, const std::string & password, std
         }
     }
 
+    dummy_log_debug( MODULENAME, "authenticate: OK: user %u, session_id %s", user_id, session_id.c_str() );
+
     return true;
 }
 
@@ -166,7 +168,7 @@ void Manager::remove_expired()
         }
     }
 
-    dummy_log_debug( MODULENAME, "remove_expired: number of expired sessions %u", num_expired );
+    dummy_log_debug( MODULENAME, "remove_expired: number of expired sessions = %u", num_expired );
 }
 
 void Manager::init_new_session( Session & sess )
@@ -204,7 +206,7 @@ void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, use
         assert( _b );
     }
 
-    dummy_log_debug( MODULENAME, "add_new_session: total number of sessions %u", map_sessions_.size() );
+    dummy_log_debug( MODULENAME, "add_new_session: total number of sessions = %u", map_sessions_.size() );
 }
 
 bool Manager::is_authenticated( const std::string & session_id, user_id_t & user_id )
@@ -214,7 +216,10 @@ bool Manager::is_authenticated( const std::string & session_id, user_id_t & user
     remove_expired();
 
     if( map_sessions_.count( session_id ) == 0 )
+    {
+        dummy_log_debug( MODULENAME, "is_authenticated: NO: unknown session_id %s", session_id.c_str() );
         return false;
+    }
 
     auto it = map_session_to_user_.find( session_id );
 
@@ -226,6 +231,8 @@ bool Manager::is_authenticated( const std::string & session_id, user_id_t & user
     {
         postpone_expiration( map_sessions_[ session_id ] );
     }
+
+    dummy_log_debug( MODULENAME, "is_authenticated: OK: session_id %s", session_id.c_str() );
 
     return true;
 }
