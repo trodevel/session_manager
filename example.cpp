@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3632 $ $Date:: 2016-04-05 #$ $Author: serge $
+// $Revision: 4978 $ $Date:: 2016-11-11 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
@@ -36,6 +36,7 @@ public:
         map_user_to_pwd_hash_.insert( Map::value_type( 1, std::hash<std::string>()( "alpha" ) ) );
         map_user_to_pwd_hash_.insert( Map::value_type( 2, std::hash<std::string>()( "beta" ) ) );
         map_user_to_pwd_hash_.insert( Map::value_type( 3, std::hash<std::string>()( "gamma" ) ) );
+        map_user_to_pwd_hash_.insert( Map::value_type( 4, std::hash<std::string>()( "omega" ) ) );
     }
 
     // interface session_manager::IAuthenticator
@@ -248,6 +249,65 @@ void test_expiration( session_manager::Manager & m, uint32_t user_id, const std:
     }
 }
 
+void test_remove_expired( session_manager::Manager & m, uint32_t user_id, const std::string & password, uint32_t sleep )
+{
+    std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
+
+    std::string id;
+    std::string error;
+
+    std::cout << "try: 1" << std::endl;
+
+    auto b = m.authenticate( user_id, password, id, error );
+
+    if( b == false )
+    {
+        std::cout << "ERROR: " << error << std::endl;
+        return;
+    }
+
+    std::cout << "OK: user authenticated: session id = " << id << std::endl;
+
+    std::cout << "try: 2" << std::endl;
+
+    b = m.authenticate( user_id, password, id, error );
+
+    if( b == false )
+    {
+        std::cout << "ERROR: " << error << std::endl;
+        return;
+    }
+
+    std::cout << "OK: user authenticated: session id = " << id << std::endl;
+
+    std::cout << "try: 3" << std::endl;
+
+    b = m.authenticate( user_id, password, id, error );
+
+    if( b == false )
+    {
+        std::cout << "ERROR: " << error << std::endl;
+
+        std::cout << "OK: cannot authenticate, sleep " << sleep << " min" << std::endl;
+
+        std::chrono::minutes timespan( sleep );
+
+        std::this_thread::sleep_for( timespan );
+    }
+
+    std::cout << "try: 4" << std::endl;
+
+    b = m.authenticate( user_id, password, id, error );
+
+    if( b == false )
+    {
+        std::cout << "ERROR: " << error << std::endl;
+        return;
+    }
+
+    std::cout << "OK: user authenticated: session id = " << id << std::endl;
+}
+
 int main()
 {
     Authenticator a;
@@ -271,6 +331,7 @@ int main()
     const uint32_t user1 = 1;
     const uint32_t user2 = 2;
     const uint32_t user3 = 3;
+    const uint32_t user4 = 4;
 
     test_auth( m, user1, "blabla" );
     test_auth( m, user1, "alpha" );
@@ -286,6 +347,8 @@ int main()
     test_close_wrong_id( m );
 
     test_expiration( m, user2, "beta", cfg.expiration_time );
+
+    test_remove_expired( m, user4, "omega", cfg.expiration_time );
 
     return 0;
 }

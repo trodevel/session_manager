@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3742 $ $Date:: 2016-04-11 #$ $Author: serge $
+// $Revision: 4978 $ $Date:: 2016-11-11 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -60,6 +60,8 @@ bool Manager::authenticate( user_id_t user_id, const std::string & password, std
     dummy_log_debug( MODULENAME, "authenticate: user %u, password ...", user_id );
 
     MUTEX_SCOPE_LOCK( mutex_ );
+
+    remove_expired();
 
     if( auth_->is_authenticated( user_id, password ) == false )
     {
