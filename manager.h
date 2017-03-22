@@ -19,7 +19,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 3689 $ $Date:: 2016-04-09 #$ $Author: serge $
+// $Revision: 6192 $ $Date:: 2017-03-22 #$ $Author: serge $
+
+#ifndef SESSION_MANAGER_MANAGER_H
+#define SESSION_MANAGER_MANAGER_H
 
 #include <map>          // std::map
 #include <set>          // std::set
@@ -55,6 +58,7 @@ public:
 
     bool is_authenticated( const std::string & session_id, user_id_t & user_id );
     bool is_authenticated( const std::string & session_id );
+    user_id_t get_user_id( const std::string & session_id );
 
 private:
 
@@ -97,3 +101,4 @@ private:
 
 }
 
+#endif // SESSION_MANAGER_MANAGER_H

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 4978 $ $Date:: 2016-11-11 #$ $Author: serge $
+// $Revision: 6192 $ $Date:: 2017-03-22 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -244,6 +244,13 @@ bool Manager::is_authenticated( const std::string & session_id )
     user_id_t dummy;
 
     return is_authenticated( session_id, dummy );
+}
+
+Manager::user_id_t Manager::get_user_id( const std::string & session_id )
+{
+    user_id_t res;
+
+    return is_authenticated( session_id, res ) ? res : 0;
 }
 
 bool Manager::Session::is_expired() const
