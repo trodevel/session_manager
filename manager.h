@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6192 $ $Date:: 2017-03-22 #$ $Author: serge $
+// $Revision: 6677 $ $Date:: 2017-04-21 #$ $Author: serge $
 
 #ifndef SESSION_MANAGER_MANAGER_H
 #define SESSION_MANAGER_MANAGER_H
@@ -56,9 +56,8 @@ public:
     bool authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error );
     bool close_session( const std::string & session_id, std::string & error );
 
-    bool is_authenticated( const std::string & session_id, user_id_t & user_id );
     bool is_authenticated( const std::string & session_id );
-    user_id_t get_user_id( const std::string & session_id );
+    bool get_user_id( user_id_t * user_id, const std::string & session_id );
 
 private:
 
@@ -85,6 +84,7 @@ private:
     void add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id );
 
     bool remove_session( const std::string & session_id, std::string & error );
+    bool get_associated_user( user_id_t * user_id, const std::string & session_id );
 
 private:
     mutable std::mutex      mutex_;

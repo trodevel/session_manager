@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 4978 $ $Date:: 2016-11-11 #$ $Author: serge $
+// $Revision: 6678 $ $Date:: 2017-04-21 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
@@ -139,7 +139,7 @@ void test_is_auth_user( session_manager::Manager & m, uint32_t user_id, const st
 
         session_manager::Manager::user_id_t auth_user_id;
 
-        auto is_auth = m.is_authenticated( id, auth_user_id );
+        auto is_auth = m.get_user_id( & auth_user_id, id );
 
         if( is_auth )
         {
