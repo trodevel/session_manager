@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6677 $ $Date:: 2017-04-21 #$ $Author: serge $
+// $Revision: 6779 $ $Date:: 2017-04-28 #$ $Author: serge $
 
 #ifndef SESSION_MANAGER_MANAGER_H
 #define SESSION_MANAGER_MANAGER_H

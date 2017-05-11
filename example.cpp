@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6678 $ $Date:: 2017-04-21 #$ $Author: serge $
+// $Revision: 6779 $ $Date:: 2017-04-28 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator

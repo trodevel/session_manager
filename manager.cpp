@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6677 $ $Date:: 2017-04-21 #$ $Author: serge $
+// $Revision: 6912 $ $Date:: 2017-05-10 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -258,7 +258,7 @@ bool Manager::get_user_id( user_id_t * user_id, const std::string & session_id )
 
     auto res = get_associated_user( user_id, session_id );
 
-    dummy_log_debug( MODULENAME, "get_user_id: session_id %s, user id %u", session_id.c_str(), user_id );
+    dummy_log_debug( MODULENAME, "get_user_id: session_id %s, user id %u", session_id.c_str(), * user_id );
 
     return res;
 }
