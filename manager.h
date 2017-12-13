@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6779 $ $Date:: 2017-04-28 #$ $Author: serge $
+// $Revision: 8488 $ $Date:: 2017-12-12 #$ $Author: serge $
 
 #ifndef SESSION_MANAGER_MANAGER_H
 #define SESSION_MANAGER_MANAGER_H
@@ -29,6 +29,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <chrono>       // std::chrono::system_clock::time_point
 #include <mutex>        // std::mutex
 
+#include "types.h"      // user_id_t
 
 namespace session_manager
 {
@@ -39,13 +40,18 @@ class Manager
 {
 public:
 
-    typedef uint32_t    user_id_t;
-
     struct Config
     {
         uint16_t    expiration_time;    // in minutes
         uint16_t    max_sessions_per_user;
         bool        postpone_expiration;
+    };
+
+    struct SessionInfo
+    {
+        user_id_t                               user_id;
+        std::chrono::system_clock::time_point   start_time;
+        std::chrono::system_clock::time_point   expiration_time;
     };
 
 public:
@@ -58,6 +64,7 @@ public:
 
     bool is_authenticated( const std::string & session_id );
     bool get_user_id( user_id_t * user_id, const std::string & session_id );
+    bool get_session_info( SessionInfo * session_info, const std::string & session_id );
 
 private:
 
@@ -84,7 +91,7 @@ private:
     void add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id );
 
     bool remove_session( const std::string & session_id, std::string & error );
-    bool get_associated_user( user_id_t * user_id, const std::string & session_id );
+    bool get_associated_session( SessionInfo * session_info, const std::string & session_id, bool is_user_request );
 
 private:
     mutable std::mutex      mutex_;

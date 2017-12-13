@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6912 $ $Date:: 2017-05-10 #$ $Author: serge $
+// $Revision: 8491 $ $Date:: 2017-12-12 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -211,39 +211,45 @@ void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, use
     dummy_log_debug( MODULENAME, "add_new_session: total number of sessions = %u", map_sessions_.size() );
 }
 
-bool Manager::get_associated_user( user_id_t * user_id, const std::string & session_id )
+bool Manager::get_associated_session( SessionInfo * session_info, const std::string & session_id, bool is_user_request )
 {
     remove_expired();
 
-    if( map_sessions_.count( session_id ) == 0 )
+    auto it = map_sessions_.find( session_id );
+
+    if( it == map_sessions_.end() )
     {
-        dummy_log_debug( MODULENAME, "get_associated_user: unknown session_id %s", session_id.c_str() );
+        dummy_log_debug( MODULENAME, "get_associated_session: unknown session_id %s", session_id.c_str() );
         return false;
     }
 
-    auto it = map_session_to_user_.find( session_id );
+    auto & session = it->second;
 
-    assert( it != map_session_to_user_.end() );
+    auto it_user = map_session_to_user_.find( session_id );
 
-    * user_id = it->second;
+    assert( it_user != map_session_to_user_.end() );
 
-    if( config_.postpone_expiration )
+    session_info->user_id           = it_user->second;
+    session_info->start_time        = it->second.started;
+    session_info->expiration_time   = it->second.expire;
+
+    if( config_.postpone_expiration && is_user_request )
     {
-        postpone_expiration( map_sessions_[ session_id ] );
+        postpone_expiration( session );
     }
 
-    dummy_log_debug( MODULENAME, "get_associated_user: session_id %s, user_id %u", session_id.c_str(), * user_id );
+    dummy_log_debug( MODULENAME, "get_associated_session: session_id %s, user_id %u", session_id.c_str(), session_info->user_id );
 
     return true;
 }
 
 bool Manager::is_authenticated( const std::string & session_id )
 {
-    user_id_t dummy;
+    SessionInfo dummy;
 
     MUTEX_SCOPE_LOCK( mutex_ );
 
-    auto res = get_associated_user( & dummy, session_id );
+    auto res = get_associated_session( & dummy, session_id, true );
 
     dummy_log_debug( MODULENAME, "is_authenticated: %s: session_id %s", res ? "OK" : "NO", session_id.c_str() );
 
@@ -254,13 +260,26 @@ bool Manager::get_user_id( user_id_t * user_id, const std::string & session_id )
 {
     dummy_log_trace( MODULENAME, "get_user_id: session_id %s", session_id.c_str() );
 
+    SessionInfo dummy;
+
     MUTEX_SCOPE_LOCK( mutex_ );
 
-    auto res = get_associated_user( user_id, session_id );
+    auto res = get_associated_session( & dummy, session_id, false );
+
+    * user_id = dummy.user_id;
 
     dummy_log_debug( MODULENAME, "get_user_id: session_id %s, user id %u", session_id.c_str(), * user_id );
 
     return res;
+}
+
+bool Manager::get_session_info( SessionInfo * session_info, const std::string & session_id )
+{
+    dummy_log_trace( MODULENAME, "get_session_info: session_id %s", session_id.c_str() );
+
+    MUTEX_SCOPE_LOCK( mutex_ );
+
+    return get_associated_session( session_info, session_id, false );
 }
 
 bool Manager::Session::is_expired() const
@@ -271,4 +290,3 @@ bool Manager::Session::is_expired() const
 }
 
 }
-
