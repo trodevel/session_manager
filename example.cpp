@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 6779 $ $Date:: 2017-04-28 #$ $Author: serge $
+// $Revision: 8496 $ $Date:: 2017-12-13 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
@@ -137,7 +137,7 @@ void test_is_auth_user( session_manager::Manager & m, uint32_t user_id, const st
     {
         std::cout << "OK: user authenticated: session id = " << id << std::endl;
 
-        session_manager::Manager::user_id_t auth_user_id;
+        session_manager::user_id_t auth_user_id;
 
         auto is_auth = m.get_user_id( & auth_user_id, id );
 
@@ -308,6 +308,83 @@ void test_remove_expired( session_manager::Manager & m, uint32_t user_id, const 
     std::cout << "OK: user authenticated: session id = " << id << std::endl;
 }
 
+std::string to_string( const std::chrono::system_clock::time_point & t )
+{
+    std::time_t ttp = std::chrono::system_clock::to_time_t( t );
+    std::string res( std::ctime( &ttp ) );
+
+    return res.substr( 0, res.size() - 1 );
+}
+
+void test_get_session_info( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+{
+    std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
+
+    std::string id;
+    std::string error;
+
+    auto b = m.authenticate( user_id, password, id, error );
+
+    if( b )
+    {
+        std::cout << "OK: user authenticated: session id = " << id << std::endl;
+
+        session_manager::Manager::SessionInfo session_info;
+
+        if( m.get_session_info( & session_info, id ) )
+        {
+            std::cout << "OK: session info: " << std::endl;
+
+            std::cout
+                << "user id         : " << session_info.user_id << "\n"
+                << "start time      : " << to_string( session_info.start_time ) << "\n"
+                << "expiration time : " << to_string( session_info.expiration_time ) << std::endl;
+        }
+        else
+        {
+            std::cout << "ERROR: cannot obtain session info" << std::endl;
+        }
+
+        m.close_session( id, error );
+    }
+    else
+    {
+        std::cout << "ERROR: " << error << std::endl;
+    }
+}
+
+void test_get_session_info_2( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+{
+    std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
+
+    std::string id;
+    std::string error;
+
+    auto b = m.authenticate( user_id, password, id, error );
+
+    if( b )
+    {
+        std::cout << "OK: user authenticated: session id = " << id << std::endl;
+
+        session_manager::Manager::SessionInfo session_info;
+
+        if( m.get_session_info( & session_info, "afafaf" ) )
+        {
+            std::cout << "ERROR: got unexpected result" << std::endl;
+        }
+        else
+        {
+            std::cout << "OK: cannot obtain session info for unknown session" << std::endl;
+        }
+
+        m.close_session( id, error );
+    }
+    else
+    {
+        std::cout << "ERROR: " << error << std::endl;
+    }
+}
+
 int main()
 {
     Authenticator a;
@@ -349,6 +426,9 @@ int main()
     test_expiration( m, user2, "beta", cfg.expiration_time );
 
     test_remove_expired( m, user4, "omega", cfg.expiration_time );
+
+    test_get_session_info( m, user4, "omega" );
+    test_get_session_info_2( m, user4, "omega" );
 
     return 0;
 }
