@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 8487 $ $Date:: 2017-12-12 #$ $Author: serge $
+// $Revision: 8519 $ $Date:: 2018-01-17 #$ $Author: serge $
 
 #ifndef LIB_SESSION_MANAGER_TYPES_H
 #define LIB_SESSION_MANAGER_TYPES_H

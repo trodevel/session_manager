@@ -19,11 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 8491 $ $Date:: 2017-12-12 #$ $Author: serge $
+// $Revision: 9270 $ $Date:: 2018-05-29 #$ $Author: serge $
 
 #include "manager.h"        // self
 
 #include <cassert>          // std::assert
+#include <vector>           // std::vector
 
 #include "gen_uuid.h"       // gen_uuid
 #include "i_authenticator.h"            // IAuthenticator
@@ -157,17 +158,24 @@ bool Manager::remove_session( const std::string & session_id, std::string & erro
 
 void Manager::remove_expired()
 {
-    std::string error;
-
     std::size_t num_expired = 0;
+
+    std::vector<std::string>    expired_sessions;
 
     for( auto & v : map_sessions_ )
     {
         if( v.second.is_expired() )
         {
             num_expired++;
-            remove_session( v.first, error );
+            expired_sessions.push_back( v.first );
         }
+    }
+
+    std::string error;
+
+    for( auto & s : expired_sessions )
+    {
+        remove_session( s, error );
     }
 
     dummy_log_debug( MODULENAME, "remove_expired: number of expired sessions = %u", num_expired );
