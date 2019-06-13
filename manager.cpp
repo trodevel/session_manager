@@ -19,18 +19,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9270 $ $Date:: 2018-05-29 #$ $Author: serge $
+// $Revision: 11742 $ $Date:: 2019-06-13 #$ $Author: serge $
 
 #include "manager.h"        // self
 
 #include <cassert>          // std::assert
 #include <vector>           // std::vector
 
-#include "gen_uuid.h"       // gen_uuid
 #include "i_authenticator.h"            // IAuthenticator
 
-#include "../utils/mutex_helper.h"      // MUTEX_SCOPE_LOCK
-#include "../utils/dummy_logger.h"      // dummy_log
+#include "utils/gen_uuid.h"             // utils::gen_uuid
+#include "utils/mutex_helper.h"         // MUTEX_SCOPE_LOCK
+#include "utils/dummy_logger.h"         // dummy_log
 
 #define MODULENAME      "Manager"
 
@@ -198,7 +198,7 @@ void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, use
 
     init_new_session( sess );
 
-    session_id = gen_uuid();
+    session_id = utils::gen_uuid();
 
     dummy_log_debug( MODULENAME, "add_new_session: session %s, user %u", session_id.c_str(), user_id );
 
