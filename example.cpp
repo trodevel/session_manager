@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 8519 $ $Date:: 2018-01-17 #$ $Author: serge $
+// $Revision: 13858 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
@@ -393,7 +393,7 @@ int main()
 
     session_manager::Manager::Config cfg;
 
-    cfg.expiration_time         = 1;
+    cfg.expiration_time_min         = 1;
     cfg.max_sessions_per_user   = 2;
     cfg.postpone_expiration     = true;
 
@@ -423,9 +423,9 @@ int main()
 
     test_close_wrong_id( m );
 
-    test_expiration( m, user2, "beta", cfg.expiration_time );
+    test_expiration( m, user2, "beta", cfg.expiration_time_min );
 
-    test_remove_expired( m, user4, "omega", cfg.expiration_time );
+    test_remove_expired( m, user4, "omega", cfg.expiration_time_min );
 
     test_get_session_info( m, user4, "omega" );
     test_get_session_info_2( m, user4, "omega" );

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 8519 $ $Date:: 2018-01-17 #$ $Author: serge $
+// $Revision: 13858 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #ifndef SESSION_MANAGER_MANAGER_H
 #define SESSION_MANAGER_MANAGER_H
@@ -42,7 +42,7 @@ public:
 
     struct Config
     {
-        uint16_t    expiration_time;    // in minutes
+        uint16_t    expiration_time_min;    // in minutes
         uint16_t    max_sessions_per_user;
         bool        postpone_expiration;
     };

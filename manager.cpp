@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 11742 $ $Date:: 2019-06-13 #$ $Author: serge $
+// $Revision: 13858 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -45,7 +45,7 @@ Manager::Manager():
 
 bool Manager::init( IAuthenticator * auth, const Config & config )
 {
-    if( auth == nullptr || config.expiration_time == 0 || config.max_sessions_per_user == 0 )
+    if( auth == nullptr || config.expiration_time_min == 0 || config.max_sessions_per_user == 0 )
         return false;
 
     auth_   = auth;
@@ -184,12 +184,12 @@ void Manager::remove_expired()
 void Manager::init_new_session( Session & sess )
 {
     sess.started    = std::chrono::system_clock::now();
-    sess.expire     = sess.started + std::chrono::minutes( config_.expiration_time );
+    sess.expire     = sess.started + std::chrono::minutes( config_.expiration_time_min );
 }
 
 void Manager::postpone_expiration( Session & sess )
 {
-    sess.expire     = std::chrono::system_clock::now() + std::chrono::minutes( config_.expiration_time );
+    sess.expire     = std::chrono::system_clock::now() + std::chrono::minutes( config_.expiration_time_min );
 }
 
 void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id )
