@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13858 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13859 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
@@ -391,9 +391,9 @@ int main()
 
     session_manager::Manager m;
 
-    session_manager::Manager::Config cfg;
+    session_manager::Config cfg;
 
-    cfg.expiration_time_min         = 1;
+    cfg.expiration_time_min     = 1;
     cfg.max_sessions_per_user   = 2;
     cfg.postpone_expiration     = true;
 

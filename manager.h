@@ -1,6 +1,6 @@
 /*
 
-Authentication Manager.
+Session Manager.
 
 Copyright (C) 2016 Sergey Kolevatov
 
@@ -19,16 +19,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13858 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13859 $ $Date:: 2020-09-26 #$ $Author: serge $
 
-#ifndef SESSION_MANAGER_MANAGER_H
-#define SESSION_MANAGER_MANAGER_H
+#ifndef SESSION_MANAGER__MANAGER_H
+#define SESSION_MANAGER__MANAGER_H
 
 #include <map>          // std::map
 #include <set>          // std::set
 #include <chrono>       // std::chrono::system_clock::time_point
 #include <mutex>        // std::mutex
 
+#include "config.h"     // Config
 #include "types.h"      // user_id_t
 
 namespace session_manager
@@ -39,13 +40,6 @@ class IAuthenticator;
 class Manager
 {
 public:
-
-    struct Config
-    {
-        uint16_t    expiration_time_min;    // in minutes
-        uint16_t    max_sessions_per_user;
-        bool        postpone_expiration;
-    };
 
     struct SessionInfo
     {
@@ -108,4 +102,4 @@ private:
 
 }
 
-#endif // SESSION_MANAGER_MANAGER_H
+#endif // SESSION_MANAGER__MANAGER_H

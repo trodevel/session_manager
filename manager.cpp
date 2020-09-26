@@ -1,6 +1,6 @@
 /*
 
-Authentication Manager.
+Session Manager.
 
 Copyright (C) 2016 Sergey Kolevatov
 
@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13858 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13859 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"        // self
 
