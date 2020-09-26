@@ -19,10 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13859 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13864 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
+#include "init_config.h"        // session_manager::init_config
+#include "config_reader/config_reader.h"    // config_reader::ConfigReader
 
 #include <iostream>             // std::cout
 #include <thread>               // std::this_thread
@@ -387,48 +389,55 @@ void test_get_session_info_2( session_manager::Manager & m, uint32_t user_id, co
 
 int main()
 {
-    Authenticator a;
-
-    session_manager::Manager m;
-
-    session_manager::Config cfg;
-
-    cfg.expiration_time_min     = 1;
-    cfg.max_sessions_per_user   = 2;
-    cfg.postpone_expiration     = true;
-
-    auto b = m.init( & a, cfg );
-
-    if( b == false )
+    try
     {
-        std::cout << "ERROR: initialization failed" << std::endl;
+        std::string config_file( "config.ini" );
+
+        config_reader::ConfigReader cr;
+
+        cr.init( config_file );
+
+        session_manager::Config cfg;
+
+        session_manager::init_config( & cfg, "session_manager", cr );
+
+        Authenticator a;
+
+        session_manager::Manager m;
+
+        m.init( & a, cfg );
+
+        const uint32_t user1 = 1;
+        const uint32_t user2 = 2;
+        const uint32_t user3 = 3;
+        const uint32_t user4 = 4;
+
+        test_auth( m, user1, "blabla" );
+        test_auth( m, user1, "alpha" );
+
+        test_is_auth( m, user2, "beta" );
+
+        test_is_auth_user( m, user2, "beta" );
+
+        test_max_sessions( m, user3, "gamma" );
+
+        test_wrong_id( m );
+
+        test_close_wrong_id( m );
+
+        test_expiration( m, user2, "beta", cfg.expiration_time_min );
+
+        test_remove_expired( m, user4, "omega", cfg.expiration_time_min );
+
+        test_get_session_info( m, user4, "omega" );
+        test_get_session_info_2( m, user4, "omega" );
+
         return 0;
     }
+    catch( std::exception & e )
+    {
+        std::cout << "ERROR: " << e.what() << std::endl;
 
-    const uint32_t user1 = 1;
-    const uint32_t user2 = 2;
-    const uint32_t user3 = 3;
-    const uint32_t user4 = 4;
-
-    test_auth( m, user1, "blabla" );
-    test_auth( m, user1, "alpha" );
-
-    test_is_auth( m, user2, "beta" );
-
-    test_is_auth_user( m, user2, "beta" );
-
-    test_max_sessions( m, user3, "gamma" );
-
-    test_wrong_id( m );
-
-    test_close_wrong_id( m );
-
-    test_expiration( m, user2, "beta", cfg.expiration_time_min );
-
-    test_remove_expired( m, user4, "omega", cfg.expiration_time_min );
-
-    test_get_session_info( m, user4, "omega" );
-    test_get_session_info_2( m, user4, "omega" );
-
-    return 0;
+        return EXIT_FAILURE;
+    }
 }
