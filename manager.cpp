@@ -19,12 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13859 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13862 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"        // self
 
 #include <cassert>          // std::assert
 #include <vector>           // std::vector
+#include <stdexcept>        // std::invalid_argument
 
 #include "i_authenticator.h"            // IAuthenticator
 
@@ -45,8 +46,13 @@ Manager::Manager():
 
 bool Manager::init( IAuthenticator * auth, const Config & config )
 {
-    if( auth == nullptr || config.expiration_time_min == 0 || config.max_sessions_per_user == 0 )
-        return false;
+    assert( auth );
+
+    if( config.expiration_time_min == 0 )
+        throw std::invalid_argument( "SessionManager: expiration_time_min == 0" );
+
+    if( config.max_sessions_per_user == 0 )
+        throw std::invalid_argument( "SessionManager: max_sessions_per_user == 0" );
 
     auth_   = auth;
     config_ = config;
