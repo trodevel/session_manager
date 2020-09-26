@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13862 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13863 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #include "manager.h"        // self
 
@@ -44,7 +44,7 @@ Manager::Manager():
 {
 }
 
-bool Manager::init( IAuthenticator * auth, const Config & config )
+void Manager::init( IAuthenticator * auth, const Config & config )
 {
     assert( auth );
 
@@ -58,8 +58,6 @@ bool Manager::init( IAuthenticator * auth, const Config & config )
     config_ = config;
 
     dummy_log_info( MODULENAME, "init: OK" );
-
-    return true;
 }
 
 bool Manager::authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error )

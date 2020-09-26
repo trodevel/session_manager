@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13859 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13863 $ $Date:: 2020-09-26 #$ $Author: serge $
 
 #ifndef SESSION_MANAGER__MANAGER_H
 #define SESSION_MANAGER__MANAGER_H
@@ -51,7 +51,7 @@ public:
 public:
     Manager();
 
-    bool init( IAuthenticator * auth, const Config & config );
+    void init( IAuthenticator * auth, const Config & config );
 
     bool authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error );
     bool close_session( const std::string & session_id, std::string & error );
