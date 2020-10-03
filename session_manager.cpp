@@ -19,10 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13863 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13920 $ $Date:: 2020-10-03 #$ $Author: serge $
 
-#include "manager.h"        // self
-
+#include "session_manager.h"    // self
 #include <cassert>          // std::assert
 #include <vector>           // std::vector
 #include <stdexcept>        // std::invalid_argument
@@ -33,18 +32,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "utils/mutex_helper.h"         // MUTEX_SCOPE_LOCK
 #include "utils/dummy_logger.h"         // dummy_log
 
-#define MODULENAME      "Manager"
+#define MODULENAME      "SessionManager"
 
 
 namespace session_manager
 {
 
-Manager::Manager():
+SessionManager::SessionManager():
         auth_( nullptr )
 {
 }
 
-void Manager::init( IAuthenticator * auth, const Config & config )
+void SessionManager::init( IAuthenticator * auth, const Config & config )
 {
     assert( auth );
 
@@ -60,7 +59,7 @@ void Manager::init( IAuthenticator * auth, const Config & config )
     dummy_log_info( MODULENAME, "init: OK" );
 }
 
-bool Manager::authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error )
+bool SessionManager::authenticate( user_id_t user_id, const std::string & password, std::string & session_id, std::string & error )
 {
     dummy_log_debug( MODULENAME, "authenticate: user %u, password ...", user_id );
 
@@ -110,14 +109,14 @@ bool Manager::authenticate( user_id_t user_id, const std::string & password, std
     return true;
 }
 
-bool Manager::close_session( const std::string & session_id, std::string & error )
+bool SessionManager::close_session( const std::string & session_id, std::string & error )
 {
     MUTEX_SCOPE_LOCK( mutex_ );
 
     return remove_session( session_id, error );
 }
 
-bool Manager::remove_session( const std::string & session_id, std::string & error )
+bool SessionManager::remove_session( const std::string & session_id, std::string & error )
 {
     dummy_log_debug( MODULENAME, "remove_session: session %s", session_id.c_str() );
 
@@ -160,7 +159,7 @@ bool Manager::remove_session( const std::string & session_id, std::string & erro
     return true;
 }
 
-void Manager::remove_expired()
+void SessionManager::remove_expired()
 {
     std::size_t num_expired = 0;
 
@@ -185,18 +184,18 @@ void Manager::remove_expired()
     dummy_log_debug( MODULENAME, "remove_expired: number of expired sessions = %u", num_expired );
 }
 
-void Manager::init_new_session( Session & sess )
+void SessionManager::init_new_session( Session & sess )
 {
     sess.started    = std::chrono::system_clock::now();
     sess.expire     = sess.started + std::chrono::minutes( config_.expiration_time_min );
 }
 
-void Manager::postpone_expiration( Session & sess )
+void SessionManager::postpone_expiration( Session & sess )
 {
     sess.expire     = std::chrono::system_clock::now() + std::chrono::minutes( config_.expiration_time_min );
 }
 
-void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id )
+void SessionManager::add_new_session( MapUserToSessionList::mapped_type & sess_set, user_id_t user_id, std::string & session_id )
 {
     Session sess;
 
@@ -223,7 +222,7 @@ void Manager::add_new_session( MapUserToSessionList::mapped_type & sess_set, use
     dummy_log_debug( MODULENAME, "add_new_session: total number of sessions = %u", map_sessions_.size() );
 }
 
-bool Manager::get_associated_session( SessionInfo * session_info, const std::string & session_id, bool is_user_request )
+bool SessionManager::get_associated_session( SessionInfo * session_info, const std::string & session_id, bool is_user_request )
 {
     remove_expired();
 
@@ -255,7 +254,7 @@ bool Manager::get_associated_session( SessionInfo * session_info, const std::str
     return true;
 }
 
-bool Manager::is_authenticated( const std::string & session_id )
+bool SessionManager::is_authenticated( const std::string & session_id )
 {
     SessionInfo dummy;
 
@@ -268,7 +267,7 @@ bool Manager::is_authenticated( const std::string & session_id )
     return res;
 }
 
-bool Manager::get_user_id( user_id_t * user_id, const std::string & session_id )
+bool SessionManager::get_user_id( user_id_t * user_id, const std::string & session_id )
 {
     dummy_log_trace( MODULENAME, "get_user_id: session_id %s", session_id.c_str() );
 
@@ -285,7 +284,7 @@ bool Manager::get_user_id( user_id_t * user_id, const std::string & session_id )
     return res;
 }
 
-bool Manager::get_session_info( SessionInfo * session_info, const std::string & session_id )
+bool SessionManager::get_session_info( SessionInfo * session_info, const std::string & session_id )
 {
     dummy_log_trace( MODULENAME, "get_session_info: session_id %s", session_id.c_str() );
 
@@ -294,7 +293,7 @@ bool Manager::get_session_info( SessionInfo * session_info, const std::string & 
     return get_associated_session( session_info, session_id, false );
 }
 
-bool Manager::Session::is_expired() const
+bool SessionManager::Session::is_expired() const
 {
     auto now = std::chrono::system_clock::now();
 

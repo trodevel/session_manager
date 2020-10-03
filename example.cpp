@@ -19,9 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13864 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13920 $ $Date:: 2020-10-03 #$ $Author: serge $
 
-#include "manager.h"            // session_manager::Manager
+#include "session_manager/session_manager.h"            // session_manager::Manager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
 #include "init_config.h"        // session_manager::init_config
 #include "config_reader/config_reader.h"    // config_reader::ConfigReader
@@ -66,7 +66,7 @@ private:
     Map map_user_to_pwd_hash_;
 };
 
-void test_auth( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+void test_auth( session_manager::SessionManager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -85,7 +85,7 @@ void test_auth( session_manager::Manager & m, uint32_t user_id, const std::strin
     }
 }
 
-void test_is_auth( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+void test_is_auth( session_manager::SessionManager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -126,7 +126,7 @@ void test_is_auth( session_manager::Manager & m, uint32_t user_id, const std::st
     }
 }
 
-void test_is_auth_user( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+void test_is_auth_user( session_manager::SessionManager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -165,7 +165,7 @@ void test_is_auth_user( session_manager::Manager & m, uint32_t user_id, const st
     }
 }
 
-void test_wrong_id( session_manager::Manager & m )
+void test_wrong_id( session_manager::SessionManager & m )
 {
     std::string id = "b3ef4ab3-2c1c-4590-8d9c-a764eb068dbf";
 
@@ -181,7 +181,7 @@ void test_wrong_id( session_manager::Manager & m )
     }
 }
 
-void test_close_wrong_id( session_manager::Manager & m )
+void test_close_wrong_id( session_manager::SessionManager & m )
 {
     std::string id = "b3ef4ab3-2c1c-4590-8d9c-a764eb068dbf";
 
@@ -199,14 +199,14 @@ void test_close_wrong_id( session_manager::Manager & m )
     }
 }
 
-void test_max_sessions( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+void test_max_sessions( session_manager::SessionManager & m, uint32_t user_id, const std::string & password )
 {
     test_auth( m, user_id, password );
     test_auth( m, user_id, password );
     test_auth( m, user_id, password );
 }
 
-void test_expiration( session_manager::Manager & m, uint32_t user_id, const std::string & password, uint32_t sleep )
+void test_expiration( session_manager::SessionManager & m, uint32_t user_id, const std::string & password, uint32_t sleep )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -251,7 +251,7 @@ void test_expiration( session_manager::Manager & m, uint32_t user_id, const std:
     }
 }
 
-void test_remove_expired( session_manager::Manager & m, uint32_t user_id, const std::string & password, uint32_t sleep )
+void test_remove_expired( session_manager::SessionManager & m, uint32_t user_id, const std::string & password, uint32_t sleep )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -318,7 +318,7 @@ std::string to_string( const std::chrono::system_clock::time_point & t )
     return res.substr( 0, res.size() - 1 );
 }
 
-void test_get_session_info( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+void test_get_session_info( session_manager::SessionManager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -331,7 +331,7 @@ void test_get_session_info( session_manager::Manager & m, uint32_t user_id, cons
     {
         std::cout << "OK: user authenticated: session id = " << id << std::endl;
 
-        session_manager::Manager::SessionInfo session_info;
+        session_manager::SessionManager::SessionInfo session_info;
 
         if( m.get_session_info( & session_info, id ) )
         {
@@ -355,7 +355,7 @@ void test_get_session_info( session_manager::Manager & m, uint32_t user_id, cons
     }
 }
 
-void test_get_session_info_2( session_manager::Manager & m, uint32_t user_id, const std::string & password )
+void test_get_session_info_2( session_manager::SessionManager & m, uint32_t user_id, const std::string & password )
 {
     std::cout << "testing: user = " << user_id << ", password = " << password << std::endl;
 
@@ -368,7 +368,7 @@ void test_get_session_info_2( session_manager::Manager & m, uint32_t user_id, co
     {
         std::cout << "OK: user authenticated: session id = " << id << std::endl;
 
-        session_manager::Manager::SessionInfo session_info;
+        session_manager::SessionManager::SessionInfo session_info;
 
         if( m.get_session_info( & session_info, "afafaf" ) )
         {
@@ -403,7 +403,7 @@ int main()
 
         Authenticator a;
 
-        session_manager::Manager m;
+        session_manager::SessionManager m;
 
         m.init( & a, cfg );
 

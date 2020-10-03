@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13863 $ $Date:: 2020-09-26 #$ $Author: serge $
+// $Revision: 13920 $ $Date:: 2020-10-03 #$ $Author: serge $
 
 #ifndef SESSION_MANAGER__MANAGER_H
 #define SESSION_MANAGER__MANAGER_H
@@ -37,7 +37,7 @@ namespace session_manager
 
 class IAuthenticator;
 
-class Manager
+class SessionManager
 {
 public:
 
@@ -49,7 +49,7 @@ public:
     };
 
 public:
-    Manager();
+    SessionManager();
 
     void init( IAuthenticator * auth, const Config & config );
 
