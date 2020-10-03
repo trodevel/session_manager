@@ -19,9 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 13920 $ $Date:: 2020-10-03 #$ $Author: serge $
+// $Revision: 13927 $ $Date:: 2020-10-03 #$ $Author: serge $
 
-#include "session_manager/session_manager.h"            // session_manager::Manager
+#include "session_manager/session_manager.h"       // session_manager::SessionManager
 #include "i_authenticator.h"    // session_manager::IAuthenticator
 #include "init_config.h"        // session_manager::init_config
 #include "config_reader/config_reader.h"    // config_reader::ConfigReader
